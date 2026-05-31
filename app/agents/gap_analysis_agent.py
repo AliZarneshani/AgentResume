@@ -20,7 +20,7 @@ def analyze_gaps(
         [
             (
                 "system",
-                """
+               """
 You are an expert HR gap analysis specialist.
 
 Your job is to identify the most important gaps between a candidate resume and a job description.
@@ -29,28 +29,22 @@ Rules:
 - Return only valid JSON.
 - Do not add explanations outside JSON.
 - Do not invent missing information.
-- Use the parsed resume, parsed job description, and match analysis as evidence.
-- Classify gaps into critical, moderate, and minor.
-- A critical gap is something that strongly affects the candidate's suitability.
-- A moderate gap is important but not disqualifying.
+- Use semantic evidence, not only exact keyword matching.
+- Do not mark a requirement as a critical gap if the resume contains strong equivalent experience.
+- If a requirement is partially covered, classify it as moderate or minor, not critical.
+- Critical gaps should be reserved for essential requirements with little or no evidence in the resume.
+- A moderate gap is important but partially covered or learnable.
 - A minor gap is useful to improve but not a major concern.
 - For every gap, provide a practical suggestion.
+- Use the parsed resume, parsed job description, and match analysis as evidence.
 - Keep the output compatible with the provided schema.
 
+Examples:
+- If the job requires API design and the resume has FastAPI, backend, or REST-related experience, this is not a critical gap.
+- If the job requires AI tools and the resume has LLM, RAG, LangChain, LangGraph, or AI engineering experience, this is not a critical gap.
+- If the job requires a specific database such as PostgreSQL but the resume only has SQL, this is a moderate gap, not a complete missing skill.
+
 {format_instructions}
-""",
-            ),
-            (
-                "human",
-                """
-Parsed resume JSON:
-{parsed_resume}
-
-Parsed job description JSON:
-{parsed_job}
-
-Match analysis JSON:
-{match_analysis}
 """,
             ),
         ]

@@ -29,20 +29,19 @@ Rules:
 - Do not add explanations outside JSON.
 - Be fair and evidence-based.
 - Do not invent skills or experience.
-- If something is not clearly present in the resume, treat it as missing.
+- Use semantic matching, not only exact keyword matching.
+- If the resume shows equivalent or closely related experience, count it as a match or partial match.
+- For example:
+  - FastAPI experience can support API design/backend development.
+  - SQL can partially support database experience, even if PostgreSQL/MySQL is not explicitly listed.
+  - LLM, RAG, LangChain, LangGraph, AI engineering, or model fine-tuning can support AI-tool or AI-assisted development requirements.
+  - Python backend experience can partially support backend development.
+- If a requirement is only partially covered, do not mark it as a full strength; mention the limitation in weaknesses.
+- Required skills are more important than preferred skills.
+- If something is not clearly present or semantically supported by the resume, treat it as missing.
 - Keep the output compatible with the provided schema.
 
 {format_instructions}
-""",
-            ),
-            (
-                "human",
-                """
-Parsed resume JSON:
-{parsed_resume}
-
-Parsed job description JSON:
-{parsed_job}
 """,
             ),
         ]
