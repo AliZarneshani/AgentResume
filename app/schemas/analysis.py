@@ -34,3 +34,23 @@ class GapAnalysis(BaseModel):
 
     improvement_recommendations: list[str] = Field(default_factory=list)
     overall_gap_summary: str = ""
+
+
+class ScoreBreakdown(BaseModel):
+    skills_score: float = 0.0
+    experience_score: float = 0.0
+    education_score: float = 0.0
+    tools_score: float = 0.0
+    overall_fit_score: float = 0.0
+
+
+class ScoringAnalysis(BaseModel):
+    overall_score: float = 0.0
+    score_breakdown: ScoreBreakdown = Field(default_factory=ScoreBreakdown)
+
+    score_reasoning: str = ""
+    hiring_recommendation: str = ""
+    confidence_level: str = ""
+
+    main_positive_factors: list[str] = Field(default_factory=list)
+    main_negative_factors: list[str] = Field(default_factory=list)
