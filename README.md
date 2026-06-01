@@ -60,6 +60,10 @@ Scoring Agent
 Final Report
 ```
 
+## UI Preview
+
+![AgentResume UI](docs/images/ui-preview.png)
+
 ---
 
 ## Project Structure
