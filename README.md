@@ -1,24 +1,24 @@
 # AgentResume
 
-AgentResume is a **Multi-Agent Resume Analysis API** that compares a candidate resume against a job description and generates a structured hiring report.
+AgentResume is a **Multi-Agent Resume Analysis System** that compares a PDF resume with a job description and generates a structured hiring report.
 
-The system extracts text from a PDF resume, parses the resume, analyzes the job description, compares both sides, identifies gaps, assigns a score from `0` to `10`, and returns a final JSON report.
+It uses **FastAPI** as the backend, **LangGraph** for multi-agent workflow orchestration, **AvalAI** as an OpenAI-compatible LLM provider, and **Streamlit** as the user interface.
 
 ---
 
 ## Features
 
 * PDF resume upload
-* Job description input as plain text
-* Resume text extraction from PDF
-* Structured resume parsing
-* Structured job description parsing
-* Resume-job match analysis
+* Job description analysis
+* Resume parsing
+* Job requirement extraction
+* Resume-job matching
 * Gap analysis
 * Candidate scoring from `0` to `10`
-* Final JSON hiring report
+* Final hiring report
 * Debug endpoint for development
-* Docker support
+* Streamlit UI
+* Docker Compose support
 
 ---
 
@@ -29,41 +29,35 @@ The system extracts text from a PDF resume, parses the resume, analyzes the job 
 * LangChain
 * LangGraph
 * Pydantic
+* AvalAI API
 * pypdf
+* Streamlit
 * Docker
-* Docker Compose
 
 ---
 
 ## Architecture
 
 ```text
-Client
-  |
-  v
+Streamlit UI
+    ↓
 FastAPI API
-  |
-  v
+    ↓
 PDF Text Extractor
-  |
-  v
+    ↓
 LangGraph Workflow
-  |
-  +--> Resume Parser Agent
-  |
-  +--> Job Description Parser Agent
-  |
-  +--> Match Analysis Agent
-  |
-  +--> Gap Analysis Agent
-  |
-  +--> Scoring Agent
-  |
-  v
-Final Report Builder
-  |
-  v
-JSON Response
+    ↓
+Resume Parser Agent
+    ↓
+Job Description Agent
+    ↓
+Match Analysis Agent
+    ↓
+Gap Analysis Agent
+    ↓
+Scoring Agent
+    ↓
+Final Report
 ```
 
 ---
@@ -73,61 +67,21 @@ JSON Response
 ```text
 app/
 ├── agents/
-│   ├── gap_analysis_agent.py
-│   ├── job_description_agent.py
-│   ├── match_analysis_agent.py
-│   ├── resume_parser_agent.py
-│   ├── scoring_agent.py
-│   └── prompts/
 ├── api/
-│   └── routes/
-│       └── analyze.py
 ├── core/
-│   ├── config.py
-│   ├── exceptions.py
-│   └── logging.py
 ├── graph/
-│   ├── nodes.py
-│   ├── state.py
-│   └── workflow.py
 ├── schemas/
-│   ├── analysis.py
-│   ├── job.py
-│   ├── report.py
-│   └── resume.py
 ├── services/
-│   ├── llm_client.py
-│   ├── pdf_extractor.py
-│   ├── report_builder.py
-│   └── validators.py
-└── utils/
-    └── json_utils.py
-```
+└── main.py
 
----
+frontend/
+└── streamlit_app.py
 
-## Installation
-
-Install dependencies:
-
-```bash
-uv pip install -r requirements.txt
-```
-
-Required packages:
-
-```txt
-fastapi
-uvicorn
-python-multipart
-pydantic
-pydantic-settings
-python-dotenv
-langchain
-langchain-openai
-langgraph
-pypdf
-pytest
+Dockerfile
+Dockerfile.streamlit
+docker-compose.yml
+requirements.txt
+README.md
 ```
 
 ---
@@ -142,72 +96,116 @@ AVALAI_BASE_URL=https://api.avalai.ir/v1
 AVALAI_MODEL=gpt-4o-mini
 ```
 
-AgentResume uses AvalAI as an OpenAI-compatible provider.
+---
 
-You can change the model name based on the models available in your AvalAI account.
+## Installation
+
+```bash
+uv venv
+uv pip install -r requirements.txt
+```
+
+Activate virtual environment on Windows:
+
+```bash
+.venv\Scripts\activate
+```
 
 ---
 
 ## Run Locally
 
-Start the FastAPI server:
+Start the FastAPI backend:
 
 ```bash
-uvicorn app.main:app --reload
+python -m uvicorn app.main:app --reload --port 8000
 ```
 
-Open Swagger UI:
+Start the Streamlit frontend in another terminal:
+
+```bash
+streamlit run frontend/streamlit_app.py
+```
+
+Open the UI:
+
+```text
+http://localhost:8501
+```
+
+FastAPI docs:
 
 ```text
 http://127.0.0.1:8000/docs
 ```
 
-Health check:
+---
 
-```text
-http://127.0.0.1:8000/
+## Run with Docker
+
+```bash
+docker-compose up --build
 ```
 
-Expected response:
+Streamlit UI:
 
-```json
-{
-  "message": "AgentResume API is running"
-}
+```text
+http://127.0.0.1:8501
+```
+
+FastAPI docs:
+
+```text
+http://127.0.0.1:8001/docs
+```
+
+Stop containers:
+
+```bash
+docker-compose down
 ```
 
 ---
 
 ## API Endpoints
 
-### POST `/analyze`
+### `POST /analyze`
 
-Returns the final user-facing resume analysis report.
+Returns the final resume analysis report.
 
-#### Request
+Inputs:
 
-Form data:
+| Field             | Type   | Description          |
+| ----------------- | ------ | -------------------- |
+| `job_description` | string | Job description text |
+| `resume_file`     | file   | PDF resume           |
 
-| Field             | Type   | Required | Description          |
-| ----------------- | ------ | -------: | -------------------- |
-| `job_description` | string |      Yes | Job description text |
-| `resume_file`     | file   |      Yes | PDF resume           |
+Example response:
 
-#### Example cURL
-
-```bash
-curl -X POST "http://127.0.0.1:8000/analyze" \
-  -H "accept: application/json" \
-  -H "Content-Type: multipart/form-data" \
-  -F "job_description=We are looking for a Python backend developer with FastAPI, Docker, PostgreSQL and API design experience." \
-  -F "resume_file=@resume.pdf;type=application/pdf"
+```json
+{
+  "overall_score": 6.5,
+  "strengths_summary": [
+    "Strong Python background"
+  ],
+  "weaknesses_summary": [
+    "Limited frontend experience"
+  ],
+  "gaps_found": [
+    "Moderate: PostgreSQL experience is not clearly shown"
+  ],
+  "recommendations": [
+    "Add more backend API projects to the resume"
+  ],
+  "hiring_recommendation": "Consider",
+  "confidence_level": "Medium",
+  "detailed_analysis": "Candidate is a partial match for the role."
+}
 ```
 
-### POST `/analyze/debug`
+### `POST /analyze/debug`
 
-Returns the full internal workflow output for development and debugging.
-
-This endpoint includes:
+Returns the full internal workflow output:
 
 * Extracted resume text
 * Parsed resume
@@ -217,97 +215,31 @@ This endpoint includes:
 * Scoring analysis
 * Final report
 
-Use this endpoint during development to inspect how each agent is performing.
-
----
-
-## Docker
-
-Build and run with Docker Compose:
-
-```bash
-docker compose up --build
-```
-
-Open Swagger UI:
-
-```text
-http://127.0.0.1:8000/docs
-```
-
-Stop containers:
-
-```bash
-docker compose down
-```
-
----
-
-## Validation Rules
-
-The API currently validates:
-
-* Only PDF files are accepted
-* Empty PDF files are rejected
-* PDF file size must be under the configured limit
-* Job description cannot be empty
-* Very short job descriptions are rejected
-* Scanned or image-based PDFs may fail if no text can be extracted
-
 ---
 
 ## Current Limitations
 
 * Only PDF resumes are supported
 * Scanned PDFs are not supported yet
-* No database storage
 * No authentication
+* No database
 * No caching
-* No background job queue
-* LLM output quality depends on the selected AvalAI model
-* The system is currently optimized for MVP usage, not high-scale production traffic
+* Final report consistency can still be improved
 
 ---
 
 ## Roadmap
 
-* Add OCR fallback for scanned PDFs
+* Add Final Report Agent
+* Add OCR support
 * Add authentication
-* Add Redis caching
-* Add database support for analysis history
+* Add database storage
 * Add batch resume analysis
-* Add web dashboard
-* Add more robust evaluation tests
-* Add async/background processing
-* Add configurable scoring weights
-* Add support for DOCX resumes
+* Add downloadable report
+* Improve Streamlit UI
 
 ---
 
-## Development Notes
+## Author
 
-The main workflow is defined in:
-
-```text
-app/graph/workflow.py
-```
-
-Workflow nodes are defined in:
-
-```text
-app/graph/nodes.py
-```
-
-The final report is built in:
-
-```text
-app/services/report_builder.py
-```
-
-The main API route is defined in:
-
-```text
-app/api/routes/analyze.py
-```
-
-
+Developed by Ali Zarneshani.
